@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>golam.akhand — desktop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg:      #0b0a09;
+  --bg-2:    #121110;
+  --paper:   #ece4d6;
+  --dim:     #8a8177;
+  --faint:   #4a453e;
+  --brick:   #b8462c;
+  --line:    #2a2621;
+  --win:     #171512;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ background:var(--bg); color:var(--paper); height:100%; overscroll-behavior:none; }
+body{
+  font-family:'JetBrains Mono', monospace;
+  overflow:hidden;
+  position:relative;
+  user-select:none;
+}
+a{ color:inherit; }
+::selection{ background:var(--brick); color:var(--paper); }
+
+/* grain */
+body::before{
+  content:""; position:fixed; inset:0; z-index:1; pointer-events:none;
+  opacity:.05; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* faint scanlines, cybercafe CRT nod */
+body::after{
+  content:""; position:fixed; inset:0; z-index:2; pointer-events:none;
+  opacity:.06;
+  background:repeating-linear-gradient(to bottom, transparent 0 2px, #000 2px 3px);
+}
+
+/* ============ DESKTOP ============ */
+#desktop{
+  position:relative; width:100%; height:100vh; z-index:3;
+}
+
+.icon{
+  position:absolute;
+  width:88px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:8px 4px;
+  cursor:default;
+  touch-action:none;
+}
+.icon .glyph{
+  width:52px; height:52px;
+  display:flex; align-items:center; justify-content:center;
+  animation:iconFloat 3.6s ease-in-out infinite;
+  animation-delay:var(--float-delay, 0s);
+}
+@keyframes iconFloat{
+  0%, 100%{ transform:translateY(0); }
+  50%{ transform:translateY(-6px); }
+}
+.icon .glyph svg{ width:100%; height:100%; }
+.icon .glyph img{
+  width:40px; height:40px;
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+}
+.icon .label{
+  font-size:10.5px; letter-spacing:.06em; text-align:center;
+  color:var(--paper);
+  padding:2px 5px;
+  text-shadow:0 1px 6px rgba(0,0,0,.9);
+}
+.icon.selected .label{ background:var(--brick); color:var(--paper); }
+.icon:active .glyph{ animation-play-state:paused; transform:translateY(1px); }
+
+/* ============ WINDOW ============ */
+.win{
+  position:absolute;
+  min-width:280px;
+  max-width:92vw;
+  background:var(--win);
+  border:1px solid var(--line);
+  box-shadow:0 24px 60px rgba(0,0,0,.55);
+  z-index:10;
+  display:none;
+  flex-direction:column;
+}
+.win.open{ display:flex; }
+.win-bar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 10px;
+  background:var(--bg-2);
+  border-bottom:1px solid var(--line);
+  cursor:grab;
+  font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim);
+}
+.win-bar:active{ cursor:grabbing; }
+.win-bar .win-title{ display:flex; align-items:center; gap:8px; color:var(--paper); }
+.win-bar .win-title .dot{ width:6px; height:6px; border-radius:50%; background:var(--brick); }
+.win-bar .win-btns{ display:flex; gap:6px; }
+.win-btns button{
+  width:16px; height:16px;
+  border:1px solid var(--line);
+  background:transparent; color:var(--dim);
+  font-size:9px; line-height:1;
+  cursor:pointer;
+}
+.win-btns button:hover{ border-color:var(--brick); color:var(--brick); }
+.win-body{
+  padding:20px 22px 24px;
+  font-size:12px; line-height:1.7; color:var(--paper);
+  max-height:60vh; overflow:auto;
+}
+.win-body h3{
+  font-family:'Anton', sans-serif; font-weight:400;
+  font-size:20px; text-transform:lowercase; letter-spacing:.02em;
+  margin-bottom:12px; color:var(--paper);
+}
+.win-body p{ margin-bottom:10px; color:var(--dim); }
+.win-body .stamp{
+  margin-top:16px; font-size:10px; letter-spacing:.1em; color:var(--faint);
+}
+.win-body a{ color:var(--brick); }
+.win-body a:hover{ text-decoration:underline; }
+.win-body .field{ display:flex; justify-content:space-between; gap:14px; padding:5px 0; border-bottom:1px solid var(--line); font-size:11px; }
+.win-body .field span:first-child{ color:var(--dim); text-transform:uppercase; letter-spacing:.08em; font-size:10px; }
+
+.folder-list{ margin-top:4px; border-top:1px solid var(--line); }
+.frow{
+  padding:9px 4px; border-bottom:1px solid var(--line);
+  font-size:11.5px; letter-spacing:.04em; color:var(--paper);
+  cursor:pointer; display:flex; align-items:center; gap:8px;
+}
+.frow::before{ content:"—"; color:var(--faint); }
+.frow:hover{ color:var(--brick); }
+.frow:hover::before{ color:var(--brick); }
+.win-body .ascii{
+  margin:0; font-family:inherit; color:#d97fa8; font-size:5px; line-height:1;
+  max-height:44vh; overflow:auto;
+}
+
+.work-grid{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:7px;
+  margin-top:6px;
+}
+.wthumb{
+  position:relative; aspect-ratio:1/1; overflow:hidden;
+  border:1px solid var(--line); background:var(--bg); cursor:pointer;
+}
+.wthumb img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  filter:grayscale(.1) contrast(1.05);
+  transition:transform .35s ease, filter .3s;
+}
+.wthumb.contain img{ object-fit:contain; padding:10px; }
+.wthumb:hover img{ transform:scale(1.07); filter:grayscale(0) contrast(1.08); }
+
+/* lightbox for work pieces */
+.lightbox{
+  position:fixed; inset:0; z-index:80;
+  background:rgba(6,5,4,.94);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; visibility:hidden; transition:opacity .25s;
+  padding:6vh 6vw;
+}
+.lightbox.open{ opacity:1; visibility:visible; }
+.lightbox img{ max-width:100%; max-height:100%; box-shadow:0 30px 80px rgba(0,0,0,.6); }
+.lightbox .lb-close{
+  position:absolute; top:26px; right:34px; font-size:11px; letter-spacing:.1em;
+  color:var(--dim); cursor:pointer;
+}
+.lightbox .lb-close:hover{ color:var(--brick); }
+.lightbox .lb-cap{
+  position:absolute; bottom:28px; left:34px; font-size:10px; letter-spacing:.1em; color:var(--dim);
+}
+
+/* notice popup, the cybercafe-style system interruption */
+.notice{
+  position:fixed; z-index:40;
+  top:18%; left:50%; transform:translateX(-50%);
+  width:min(340px, 84vw);
+  background:var(--win);
+  border:1px solid var(--brick);
+  box-shadow:0 30px 70px rgba(0,0,0,.6);
+  display:none;
+}
+.notice.open{ display:block; }
+.notice .win-bar{ border-bottom-color:var(--brick); }
+.notice .win-body{ font-size:11.5px; }
+.notice .win-body .ok{
+  margin-top:16px; display:inline-block;
+  border:1px solid var(--paper); padding:5px 16px;
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
+}
+.notice .win-body .ok:hover{ border-color:var(--brick); color:var(--brick); }
+
+/* ============ TASKBAR ============ */
+#taskbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:30;
+  height:38px;
+  background:var(--bg-2);
+  border-top:1px solid var(--line);
+  display:flex; align-items:center;
+  padding:0 10px;
+  gap:10px;
+}
+#startBtn{
+  font-family:'Anton', sans-serif; font-weight:400;
+  font-size:13px; letter-spacing:.02em; text-transform:lowercase;
+  display:flex; align-items:center; gap:8px;
+  padding:6px 12px;
+  border:1px solid var(--line);
+  cursor:pointer;
+  background:transparent; color:var(--paper);
+}
+#startBtn:hover{ border-color:var(--brick); }
+#startBtn .eye{ width:16px; height:10px; }
+#startBtn .eye .lid{ fill:none; stroke:var(--paper); stroke-width:1.6; }
+#startBtn .eye .pupil{ fill:var(--brick); }
+
+#taskWindows{ display:flex; gap:6px; flex:1; overflow:hidden; }
+.task-chip{
+  font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  padding:6px 10px; border:1px solid var(--line); color:var(--dim);
+  cursor:pointer; white-space:nowrap;
+}
+.task-chip.active{ color:var(--paper); border-color:var(--faint); background:var(--bg); }
+.task-chip:hover{ color:var(--paper); }
+
+#clock{ font-size:11px; color:var(--dim); letter-spacing:.06em; white-space:nowrap; }
+
+/* start menu */
+#startMenu{
+  position:fixed; z-index:35; left:10px; bottom:44px;
+  width:190px;
+  background:var(--win); border:1px solid var(--line);
+  box-shadow:0 24px 50px rgba(0,0,0,.55);
+  display:none; flex-direction:column;
+  font-size:11px;
+}
+#startMenu.open{ display:flex; }
+#startMenu .profile{
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg-2);
+}
+#startMenu .profile .pic{
+  width:42px; height:42px; flex:none;
+  overflow:hidden;
+  border:1px solid var(--faint);
+  filter:saturate(1.1) contrast(1.05);
+}
+#startMenu .profile .pic img{ width:100%; height:100%; object-fit:cover; display:block; }
+#startMenu .profile .who{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+#startMenu .profile .who .name{ font-size:11px; color:var(--paper); letter-spacing:.04em; }
+#startMenu .profile .who .status{ font-size:9px; color:var(--dim); letter-spacing:.08em; text-transform:uppercase; }
+#startMenu a, #startMenu .mi{
+  padding:10px 14px; color:var(--paper);
+  border-bottom:1px solid var(--line);
+  letter-spacing:.04em;
+}
+#startMenu a:last-child, #startMenu .mi:last-child{ border-bottom:none; }
+#startMenu a:hover, #startMenu .mi:hover{ background:var(--bg-2); color:var(--brick); cursor:pointer; }
+
+@media(max-width:640px){
+  .icon{ width:74px; }
+  .icon .glyph{ width:44px; height:44px; }
+  .win{ min-width:88vw; }
+}
+</style>
+</head>
+<body>
+
+<div id="desktop">
+  <!-- icons, scattered -->
+  <div class="icon" style="left:6%; top:9%; transform:rotate(-4deg); --float-delay:0s;" data-win="pictures">
+    <div class="glyph"><img src="pictures/work.png" alt="pictures"></div>
+    <div class="label">pictures</div>
+  </div>
+
+  <div class="icon" style="left:36%; top:6%; transform:rotate(3deg); --float-delay:.4s;" data-win="about">
+    <div class="glyph"><img src="pictures/about.png" alt="about"></div>
+    <div class="label">about</div>
+  </div>
+
+  <div class="icon" style="left:66%; top:12%; transform:rotate(-2deg); --float-delay:1.1s;" data-win="moto">
+    <div class="glyph"><img src="pictures/moto.png" alt="moto.txt"></div>
+    <div class="label">moto.txt</div>
+  </div>
+
+  <div class="icon" style="left:10%; top:42%; transform:rotate(5deg); --float-delay:.7s;" data-win="interests">
+    <div class="glyph"><img src="pictures/interests.png" alt="interests"></div>
+    <div class="label">interests/</div>
+  </div>
+
+  <div class="icon" style="left:46%; top:56%; transform:rotate(-5deg); --float-delay:1.6s;" data-win="skills">
+    <div class="glyph"><img src="pictures/skills.png" alt="skills"></div>
+    <div class="label">skills/</div>
+  </div>
+
+  <div class="icon" style="left:78%; top:44%; transform:rotate(4deg); --float-delay:.2s;" data-win="cool">
+    <div class="glyph"><img src="pictures/cool.png" alt="Cool.txt"></div>
+    <div class="label">Cool.txt</div>
+  </div>
+
+  <div class="icon" style="left:20%; top:74%; transform:rotate(-3deg); --float-delay:1.9s;" data-win="contact">
+    <div class="glyph"><img src="pictures/contact.png" alt="contact"></div>
+    <div class="label">contact</div>
+  </div>
+
+  <div class="icon" style="left:58%; top:78%; transform:rotate(2deg); --float-delay:.9s;" data-win="readme">
+    <div class="glyph"><img src="pictures/readme.png" alt="read_me.txt"></div>
+    <div class="label">read_me.txt</div>
+  </div>
+
+  <div class="icon" style="right:8%; bottom:14%; transform:rotate(-3deg); --float-delay:1.3s;" data-win="trash">
+    <div class="glyph"><img src="pictures/trash.png" alt="trash"></div>
+    <div class="label">trash</div>
+  </div>
+
+  <!-- windows -->
+  <div class="win" id="win-pictures" style="left:120px; top:60px; width:380px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>pictures/</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <h3>pictures</h3>
+      <div class="work-grid">
+        <div class="wthumb" data-full="pictures/helmet.jpg" data-cap="armor study — red"><img src="pictures/helmet.jpg" alt="Red helmet armor study"></div>
+        <div class="wthumb" data-full="pictures/bebop-still.jpg" data-cap="still — night drive"><img src="pictures/bebop-still.jpg" alt="Night drive still"></div>
+        <div class="wthumb contain" data-full="pictures/scribble.png" data-cap="sketch — red thread"><img src="pictures/scribble.png" alt="Loose ink scribble"></div>
+        <div class="wthumb contain" data-full="pictures/pill-sticker.jpg" data-cap="sticker — pill"><img src="pictures/pill-sticker.jpg" alt="Pill sticker"></div>
+        <div class="wthumb contain" data-full="pictures/magpie.png" data-cap="specimen — magpie"><img src="pictures/magpie.png" alt="Magpie cutout"></div>
+        <div class="wthumb" data-full="pictures/bangladesh-stamp.jpg" data-cap="stamp — water lily"><img src="pictures/bangladesh-stamp.jpg" alt="Bangladesh stamp"></div>
+        <div class="wthumb" data-full="pictures/ali-flag.jpg" data-cap="archive — flag"><img src="pictures/ali-flag.jpg" alt="Archive photo with flag"></div>
+      </div>
+      <div class="stamp">click a piece to view full size</div>
+    </div>
+  </div>
+
+  <div class="win" id="win-about" style="left:180px; top:120px; width:320px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>about.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <h3>golam akhand</h3>
+      <p>Business/Finance major, currently diving deeper into finance and marketing.</p>
+      <p>Outside of school, into filmmaking, audio engineering, and keeping up with new AI tools as they come out.</p>
+      <p>Born March 2005 in Bangladesh.</p>
+      <div class="stamp">based in Queens, NY</div>
+    </div>
+  </div>
+
+  <div class="win" id="win-moto" style="left:210px; top:150px; width:260px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>moto.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper); font-style:italic;">"Lower Low For Higher High."</p>
+    </div>
+  </div>
+
+  <div class="win" id="win-interests" style="left:230px; top:100px; width:280px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>interests/</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <h3>interests</h3>
+      <div class="folder-list">
+        <div class="frow" data-win="art">art.txt</div>
+        <div class="frow" data-win="tech">tech.txt</div>
+        <div class="frow" data-win="psych">psychology.txt</div>
+        <div class="frow" data-win="photo">photography.txt</div>
+      </div>
+      <div class="stamp">click a file to open</div>
+    </div>
+  </div>
+
+  <div class="win" id="win-art" style="left:280px; top:130px; width:260px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>art.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper);">Art that expresses emotion — a way of putting feeling into something visible.</p>
+    </div>
+  </div>
+
+  <div class="win" id="win-tech" style="left:290px; top:140px; width:260px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>tech.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper);">Always curious about new technology and where it's headed.</p>
+    </div>
+  </div>
+
+  <div class="win" id="win-psych" style="left:300px; top:150px; width:280px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>psychology.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper);">Interested in psychology — understanding why people think and behave the way they do.</p>
+    </div>
+  </div>
+
+  <div class="win" id="win-photo" style="left:310px; top:160px; width:290px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>photography.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper);">Passionate about photography — color grading, color engineering pictures, basic Photoshop skills, and basic camera knowledge for professional photography.</p>
+    </div>
+  </div>
+
+  <div class="win" id="win-skills" style="left:250px; top:110px; width:280px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>skills/</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <h3>skills</h3>
+      <div class="folder-list">
+        <div class="frow" data-win="hardware">computer_hardware.txt</div>
+        <div class="frow" data-win="python">python.txt</div>
+        <div class="frow" data-win="finance">finance.txt</div>
+      </div>
+      <div class="stamp">click a file to open</div>
+    </div>
+  </div>
+
+  <div class="win" id="win-hardware" style="left:320px; top:170px; width:280px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>computer_hardware.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper);">Proficient in computer hardware — building PCs, researching parts, and troubleshooting.</p>
+    </div>
+  </div>
+
+  <div class="win" id="win-python" style="left:330px; top:180px; width:250px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>python.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper);">Python — beginner level. [AI Coder]</p>
+    </div>
+  </div>
+
+  <div class="win" id="win-finance" style="left:340px; top:190px; width:270px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>finance.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper);">Interested in finance and how money works, moves, and grows.</p>
+    </div>
+  </div>
+
+  <div class="win" id="win-cool" style="left:260px; top:90px; width:320px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>Cool.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+<pre class="ascii">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡇
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢼⠟
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡾⠐
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢨⠧⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⠉⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠐⠀⠀⠀⠀⠉⠐⠢⣀⠀⠀⠀⠀⠀⠨⡃⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡤⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠳⣦⠀⠀⣰⡸⠁⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⡀⡰⣷⠇⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡟⣻⡗⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣄⢺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠀⠀⠀⢸⣹⠋⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣙⠁⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⡄⣼⠁⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⢹⡄⠀⠀⠀⠈⢂⠀⠀⠀⠀⠀⠀⠀⠀⠚⡖⢶⡶⠡⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣦⡛⣄⠀⠀⠀⢸⠀⠀⠀⠀⠀⣠⠄⠀⢠⠷⣼⠁⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡟⣯⣙⡧⢀⣀⡺⠇⢀⠀⠈⢤⣧⣴⡞⢋⣼⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡄⠤⠤⡀⠀⠀⢀⠤⠺⠙⢥⠄⠈⠂⠢⢼⠦⠬⠒⢒⡻⠧⢼⣿⡷⡟⠹⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠜⢤⡀⠀⠀⣠⡤⠄⢲⠧⡁⠀⢈⠞⠚⠃⠀⢰⠁⢼⡇⢣⣀⣱⣤⠤⠔⠈⠟⡘⣻⡎⠒⠤⠤⠊⠈⠉⢱⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⢠⢘⠗⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠄⢠⠠⠐⢃⡇⠀⣿⠀⠀⠀⠈⣆⠀⠅⠀⡦⠤⠀⣱⣼⣰⡋⠚⠀⠀⠀⠀⠈⣝⠁⠀⠀⠀⠀⢀⠀⠘⢋⡦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣷⡀⠋⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠑⠠⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠢⠴⡀⠤⠊⠀⠀⠸⣳⣤⣤⠜⠉⠐⢺⣾⣟⣗⣿⠗⠛⠙⠶⣤⣧⡄⣤⡖⠫⠼⠢⠀⠀⠔⠒⠉⠀⠀⢸⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣹⠋⠁⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠂⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⢨⣧⣀⣠⣴⣞⡄⠀⠙⢅⠀⠀⠀⢀⣤⣿⣟⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⡗⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡁⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠲⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⡀⠉⠘⣵⣟⢆⡀⡀⢡⣴⣾⠿⠺⣼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡯⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠈⠑⠲⢤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⢻⠞⣆⣀⣤⠋⠘⢈⡈⡆⢼⡏⠇⠀⡦⠿⠂⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⠖⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⠅⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠛⠹⠓⠺⠗⠦⡠⡖⠁⠀⠸⡏⠟⠆⠀⠊⠉⠀⣞⡇⠀⠀⠸⣹⡀⠀⠀⠀⠐⠒⠒⠒⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠃⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⡀⠁⢱⣤⡚⢠⠃⠀⠀⠀⠀⠀⠀⢻⡁⠀⠀⣴⣇⢳⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠃⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠒⣿⢻⡝⠋⠈⢆⠀⠀⠀⢠⠖⢯⡟⠛⠟⣩⠉⢫⠽⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠼⠃⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡔⣀⣠⣔⡎⡟⡋⠙⠓⠤⡼⠂⡔⠀⠀⠀⣾⡇⠀⠀⠈⡄⠉⠓⠺⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠔⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢾⡓⠸⣭⡏⠀⢰⣰⡀⠀⠰⢧⠰⡄⡴⠊⠁⡍⢣⡀⠁⠀⣸⢄⡀⠀⠈⠛⠶⢤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠁⣰⣿⠁⠀⣌⣅⣐⣄⣘⠺⣤⣸⡇⠀⢠⠆⢠⣟⣶⣒⣡⣼⣀⣀⣀⣀⣀⣀⢀⠉⠁⠐⠒⠒⠒⠒⠒⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⡤⢿⣀⢹⣞⣦⠔⠀⠀⠀⠀⢸⠗⣌⣩⡧⢴⡙⠠⠜⣹⠗⢮⣉⣥⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⡖⠚⠒⠟⡿⢇⠀⠀⠀⠀⠀⢠⢿⠀⠀⠀⠀⡴⠱⡀⣰⠓⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡿⠋⠠⡤⢊⣔⣧⡚⠁⠀⠀⣠⠴⠋⡞⠀⠀⠀⣠⣿⣤⢷⣧⣸⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣾⣟⡂⣐⣲⣿⢺⢿⠇⠸⠤⠔⠊⡉⢀⣀⠇⠀⠀⢰⡏⠇⢘⣆⣻⡁⠀⢱⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠾⠋⠁⠀⠀⢠⣾⠭⣣⠈⠀⠀⠀⠀⠀⠈⠉⠈⠀⠀⠀⠈⡆⠀⠈⣯⡟⠁⠀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡴⠚⠁⠀⠀⠀⠀⢀⠇⢹⣸⣭⣷⠆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠂⠀⢽⠇⠀⠚⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⣀⠠⠒⠈⠀⠀⠀⠀⠀⠀⠀⠀⡎⠐⣾⠇⠚⠁⠀⠀⠀⠀⢢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠈⠁⠈⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⢸⡛⠀⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣎⣇⠀⠀⠀⠀⠀⠀⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⡾⠿⡄⠀⠀⠀⠀⠀⠀⢀⣴⠏⠁⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣰⡎⠙⢛⢰⣧⣔⣦⡠⢤⣤⡶⠞⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⠃⠀⠀⣸⣻⣻⠦⠉⢹⡾⡏⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⣩⠏⠋⠀⠀⠀⠳⣷⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠳⡀⠀⠀⠏⡉⠀⠀⠀⠀⠀⣷⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠀⢘⣶⡷⠀⠀⠀⠀⠀⢸⣓⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⢸⠂⠀⠀⠀⠀⠀⢸⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣋⡷⠀⠀⠀⠀⠀⢀⣟⡁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣽⠉⠁⠀⠀⠀⢀⡜⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡂⠀⠀⢀⣴⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠠⣟⡦⠤⠒⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠰⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</pre>
+    </div>
+  </div>
+
+  <div class="win" id="win-contact" style="left:240px; top:180px; width:300px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>contact/</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <div class="field"><span>email</span><a href="mailto:GmAkhand@gmail.com">GmAkhand@gmail.com</a></div>
+      <div class="field"><span>instagram</span><a href="https://www.instagram.com/2ui_tara" target="_blank">@2ui_tara</a></div>
+      <div class="field"><span>discord</span><span>G #koshkih</span></div>
+    </div>
+  </div>
+
+  <div class="win" id="win-readme" style="left:300px; top:80px; width:300px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>read_me.txt</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p>about, interests/, skills/, and contact are filled in now — pictures/ keeps growing as new pieces come in.</p>
+      <p>drag me around. double-click a folder to open it, click a file inside to read it, click a piece in pictures/ to view it full size. everything remembers nothing — refresh and it resets, just like the old lab computers.</p>
+      <div class="stamp">rev. 0.2</div>
+    </div>
+  </div>
+
+  <div class="win" id="win-trash" style="right:60px; bottom:120px; width:260px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>trash</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <p>empty. nothing's been thrown out yet.</p>
+    </div>
+  </div>
+
+  <!-- boot notice, cybercafe-style interruption -->
+  <div class="notice" id="notice">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>system notice</span>
+      <span class="win-btns"><button data-close="notice">×</button></span>
+    </div>
+    <div class="win-body">
+      <p style="color:var(--paper);">connection established. desktop still being unpacked — some folders are empty for now.</p>
+      <span class="ok" id="noticeOk">[ ok ]</span>
+    </div>
+  </div>
+  <!-- lightbox for work thumbnails -->
+  <div class="lightbox" id="lightbox">
+    <span class="lb-close" id="lbClose">[ close ]</span>
+    <img id="lbImg" src="" alt="">
+    <span class="lb-cap" id="lbCap"></span>
+  </div>
+
+</div>
+
+<div id="startMenu">
+  <div class="profile">
+    <div class="pic"><img src="pictures/profile.jpg" alt="profile"></div>
+    <div class="who">
+      <span class="name">golam akhand</span>
+      <span class="status">signed in</span>
+    </div>
+  </div>
+  <a href="mailto:GmAkhand@gmail.com">email</a>
+  <a href="https://www.instagram.com/2ui_tara" target="_blank">instagram</a>
+  <div class="mi" data-win="pictures">pictures/</div>
+  <div class="mi" data-win="about">about.txt</div>
+  <div class="mi" data-win="interests">interests/</div>
+  <div class="mi" data-win="skills">skills/</div>
+  <div class="mi" data-win="contact">contact</div>
+</div>
+
+<div id="taskbar">
+  <button id="startBtn">
+    <svg class="eye" viewBox="0 0 64 40"><path class="lid" d="M2,20 Q32,-4 62,20 Q32,44 2,20 Z"/><circle class="pupil" cx="32" cy="20" r="7"/></svg>
+    golam akhand
+  </button>
+  <div id="taskWindows"></div>
+  <div id="clock">--:--</div>
+</div>
+
+<script>
+const windows = document.querySelectorAll('.win');
+const icons = document.querySelectorAll('.icon');
+const taskWindows = document.getElementById('taskWindows');
+let z = 10;
+
+function bringFront(win){
+  z += 1;
+  win.style.zIndex = z;
+}
+
+function chipFor(id){
+  return taskWindows.querySelector(`[data-chip="${id}"]`);
+}
+
+function openWindow(id){
+  const win = document.getElementById('win-' + id);
+  if(!win) return;
+  const wasOpen = win.classList.contains('open');
+  win.classList.add('open');
+  bringFront(win);
+  if(!wasOpen){
+    const chip = document.createElement('div');
+    chip.className = 'task-chip active';
+    chip.textContent = id;
+    chip.dataset.chip = id;
+    chip.addEventListener('click', ()=>{
+      if(win.classList.contains('open') && Number(win.style.zIndex) === z){
+        win.classList.remove('open');
+        chip.classList.remove('active');
+      } else {
+        win.classList.add('open');
+        bringFront(win);
+        document.querySelectorAll('.task-chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+      }
+    });
+    taskWindows.appendChild(chip);
+  } else {
+    document.querySelectorAll('.task-chip').forEach(c=>c.classList.remove('active'));
+    const chip = chipFor(id);
+    if(chip) chip.classList.add('active');
+  }
+}
+
+function closeWindow(id){
+  const win = document.getElementById('win-' + id);
+  if(win) win.classList.remove('open');
+  const chip = chipFor(id);
+  if(chip) chip.remove();
+}
+
+/* icon double-click / double-tap opens its window */
+icons.forEach(icon=>{
+  let lastTap = 0;
+  const trigger = ()=>{
+    icons.forEach(i=>i.classList.remove('selected'));
+    icon.classList.add('selected');
+    openWindow(icon.dataset.win);
+  };
+  icon.addEventListener('dblclick', trigger);
+  icon.addEventListener('touchend', ()=>{
+    const now = Date.now();
+    if(now - lastTap < 320) trigger();
+    lastTap = now;
+  });
+  icon.addEventListener('click', ()=>{
+    icons.forEach(i=>i.classList.remove('selected'));
+    icon.classList.add('selected');
+  });
+});
+
+/* folder rows (interests/, skills/) open their file windows */
+document.querySelectorAll('.frow').forEach(row=>{
+  row.addEventListener('click', ()=> openWindow(row.dataset.win));
+});
+
+/* start menu items open windows too */
+document.querySelectorAll('#startMenu .mi').forEach(mi=>{
+  mi.addEventListener('click', ()=> openWindow(mi.dataset.win));
+});
+
+/* window buttons */
+windows.forEach(win=>{
+  win.addEventListener('mousedown', ()=> bringFront(win));
+  const id = win.id.replace('win-','');
+  const closeBtn = win.querySelector('[data-close]');
+  if(closeBtn) closeBtn.addEventListener('click', ()=> closeWindow(id));
+  const minBtn = win.querySelector('[data-min]');
+  if(minBtn) minBtn.addEventListener('click', ()=>{
+    win.classList.remove('open');
+    const chip = chipFor(id);
+    if(chip) chip.classList.remove('active');
+  });
+});
+
+/* draggable icons + windows (pointer-based, works mouse + touch) */
+function makeDraggable(el, handle, container){
+  handle = handle || el;
+  let ox=0, oy=0, dragging=false;
+  handle.addEventListener('pointerdown', (e)=>{
+    if(e.target.closest('button')) return; // let win-btns (close/min) handle their own clicks
+    dragging = true;
+    handle.setPointerCapture(e.pointerId);
+    const rect = el.getBoundingClientRect();
+    ox = e.clientX - rect.left;
+    oy = e.clientY - rect.top;
+    if(container) bringFront(el);
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+  });
+  handle.addEventListener('pointermove', (e)=>{
+    if(!dragging) return;
+    el.style.left = (e.clientX - ox) + 'px';
+    el.style.top = (e.clientY - oy) + 'px';
+  });
+  handle.addEventListener('pointerup', (e)=>{
+    dragging = false;
+    try{ handle.releasePointerCapture(e.pointerId); }catch(err){}
+  });
+}
+icons.forEach(icon=> makeDraggable(icon));
+windows.forEach(win=> makeDraggable(win, win.querySelector('.win-bar'), true));
+
+/* boot notice */
+const notice = document.getElementById('notice');
+setTimeout(()=> notice.classList.add('open'), 500);
+document.getElementById('noticeOk').addEventListener('click', ()=> notice.classList.remove('open'));
+notice.querySelector('[data-close]').addEventListener('click', ()=> notice.classList.remove('open'));
+makeDraggable(notice, notice.querySelector('.win-bar'));
+
+/* start menu toggle */
+const startBtn = document.getElementById('startBtn');
+const startMenu = document.getElementById('startMenu');
+startBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  startMenu.classList.toggle('open');
+});
+document.addEventListener('click', ()=> startMenu.classList.remove('open'));
+
+/* work thumbnail lightbox */
+const lightbox = document.getElementById('lightbox');
+const lbImg = document.getElementById('lbImg');
+const lbCap = document.getElementById('lbCap');
+document.querySelectorAll('.wthumb').forEach(thumb=>{
+  thumb.addEventListener('click', ()=>{
+    lbImg.src = thumb.dataset.full;
+    lbCap.textContent = thumb.dataset.cap || '';
+    lightbox.classList.add('open');
+  });
+});
+function closeLightbox(){ lightbox.classList.remove('open'); lbImg.src=''; }
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', (e)=>{ if(e.target === lightbox) closeLightbox(); });
+window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeLightbox(); });
+
+/* clock */
+function tick(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${hh}:${mm}`;
+}
+tick();
+setInterval(tick, 1000*15);
+</script>
+
+</body>
+</html>
