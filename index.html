@@ -348,8 +348,8 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
 <div id="desktop">
   <!-- icons -->
   <div class="icon" style="left:24px; top:24px;" data-win="work">
-    <div class="glyph"><img src="pictures/work.png" alt="work"></div>
-    <div class="label">work</div>
+    <div class="glyph"><img src="pictures/work.png" alt="pictures"></div>
+    <div class="label">pictures</div>
   </div>
 
   <div class="icon" style="left:24px; top:112px;" data-win="about">
@@ -407,11 +407,11 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
   <!-- windows -->
   <div class="win" id="win-work" style="left:120px; top:60px; width:380px;">
     <div class="win-bar" data-drag>
-      <span class="win-title"><span class="dot"></span>work/</span>
+      <span class="win-title"><span class="dot"></span>pictures/</span>
       <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
     </div>
     <div class="win-body">
-      <h3>work</h3>
+      <h3>pictures</h3>
       <div class="work-grid">
         <div class="wthumb" data-full="pictures/helmet.jpg" data-cap="armor study — red"><img src="pictures/helmet.jpg" alt="Red helmet armor study"></div>
         <div class="wthumb" data-full="pictures/bebop-still.jpg" data-cap="still — night drive"><img src="pictures/bebop-still.jpg" alt="Night drive still"></div>
@@ -646,8 +646,8 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
       <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
     </div>
     <div class="win-body">
-      <p>about, interests/, skills/, and contact are filled in now — work/ keeps growing as new pieces come in.</p>
-      <p>drag me around. double-click a folder to open it, click a file inside to read it, click a piece in work/ to view it full size. everything remembers nothing — refresh and it resets, just like the old lab computers.</p>
+      <p>about, interests/, skills/, and contact are filled in now — pictures/ keeps growing as new pieces come in.</p>
+      <p>drag me around. double-click a folder to open it, click a file inside to read it, click a piece in pictures/ to view it full size. everything remembers nothing — refresh and it resets, just like the old lab computers.</p>
       <div class="stamp">rev. 0.2</div>
     </div>
   </div>
@@ -692,7 +692,7 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
   </div>
   <a href="mailto:GmAkhand@gmail.com">email</a>
   <a href="https://www.instagram.com/2ui_tara" target="_blank">instagram</a>
-  <div class="mi" data-win="work">work/</div>
+  <div class="mi" data-win="work">pictures/</div>
   <div class="mi" data-win="about">about.txt</div>
   <div class="mi" data-win="interests">interests/</div>
   <div class="mi" data-win="skills">skills/</div>
@@ -798,7 +798,7 @@ function openWindow(id){
   if(!wasOpen){
     const chip = document.createElement('div');
     chip.className = 'task-chip active';
-    chip.textContent = id;
+    chip.textContent = (id === 'work') ? 'pictures' : id;
     chip.dataset.chip = id;
     chip.addEventListener('click', ()=>{
       if(win.classList.contains('open') && Number(win.style.zIndex) === z){
@@ -879,12 +879,20 @@ function makeDraggable(el, handle, container){
   handle = handle || el;
   let ox=0, oy=0, dragging=false;
   handle.addEventListener('pointerdown', (e)=>{
+    if(e.target.closest('button')) return; // let win-btns (close/min) handle their own click
     dragging = true;
     handle.setPointerCapture(e.pointerId);
     const rect = el.getBoundingClientRect();
     ox = e.clientX - rect.left;
     oy = e.clientY - rect.top;
     if(container) bringFront(el);
+    // lock the element's current visual position in as left/top BEFORE
+    // clearing right/bottom, so elements anchored via right/bottom (tnt,
+    // trash) don't jump to the top-left corner on a plain click that
+    // never triggers pointermove.
+    const parentRect = el.offsetParent ? el.offsetParent.getBoundingClientRect() : { left:0, top:0 };
+    el.style.left = (rect.left - parentRect.left) + 'px';
+    el.style.top = (rect.top - parentRect.top) + 'px';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
   });
