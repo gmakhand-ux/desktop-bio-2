@@ -935,6 +935,7 @@ function openWindow(id){
     chip.addEventListener('click', ()=>{
       if(win.classList.contains('open') && Number(win.style.zIndex) === z){
         win.classList.remove('open');
+        pauseMediaIn(win);
         chip.classList.remove('active');
       } else {
         win.classList.add('open');
@@ -951,9 +952,20 @@ function openWindow(id){
   }
 }
 
+/* pause any playing video/audio inside a window so it doesn't keep
+   running in the background after the window is closed or minimized */
+function pauseMediaIn(win){
+  win.querySelectorAll('video, audio').forEach(media=>{
+    if(!media.paused) media.pause();
+  });
+}
+
 function closeWindow(id){
   const win = document.getElementById('win-' + id);
-  if(win) win.classList.remove('open');
+  if(win){
+    win.classList.remove('open');
+    pauseMediaIn(win);
+  }
   const chip = chipFor(id);
   if(chip) chip.remove();
 }
@@ -1001,6 +1013,7 @@ windows.forEach(win=>{
   const minBtn = win.querySelector('[data-min]');
   if(minBtn) minBtn.addEventListener('click', ()=>{
     win.classList.remove('open');
+    pauseMediaIn(win);
     const chip = chipFor(id);
     if(chip) chip.classList.remove('active');
   });
