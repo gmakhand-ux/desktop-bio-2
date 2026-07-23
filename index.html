@@ -890,13 +890,19 @@ function layoutColumnIcons(){
   const bottomMargin = 62; // clears the taskbar + a little breathing room
   const leftMargin = 14;
   const colGap = 84;
-  const iconBoxHeight = 96; // conservative estimate: padding + glyph + gap + a 2-line label
   const cols = vw < 340 ? 1 : 2;
   const rows = Math.ceil(colIcons.length / cols);
-  // leave room for the LAST row's own height, not just its top edge —
-  // otherwise the bottom row's label can overlap whatever sits below it.
-  const availableH = Math.max(vh - topMargin - bottomMargin - iconBoxHeight, 80);
-  const rowGap = rows > 1 ? Math.min(92, availableH / (rows - 1)) : 0;
+
+  // Measure the actual rendered icon height (glyph + gap + label, which can
+  // wrap to 2 lines depending on the name) instead of guessing a fixed
+  // number — a guessed height that's even slightly too small causes rows to
+  // overlap each other, which is worse than the original overflow bug.
+  const measuredHeight = Math.max(...colIcons.map(icon => icon.getBoundingClientRect().height), 80);
+  const minRowGap = measuredHeight + 10; // small breathing room between rows
+
+  const availableH = Math.max(vh - topMargin - bottomMargin - measuredHeight, 80);
+  const distributedGap = rows > 1 ? availableH / (rows - 1) : 0;
+  const rowGap = rows > 1 ? Math.max(minRowGap, distributedGap) : 0;
 
   colIcons.forEach((icon, i)=>{
     const col = i % cols;
