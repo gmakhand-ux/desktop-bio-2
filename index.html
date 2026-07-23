@@ -113,6 +113,19 @@ body::after{
   width:40px; height:40px;
   image-rendering:pixelated;
   image-rendering:crisp-edges;
+  /* if the image 404s, the browser falls back to rendering the alt text
+     at a large default size — this keeps a broken image contained to its
+     box instead of spilling oversized text over icons below it */
+  overflow:hidden;
+  text-indent:-9999px;
+  color:transparent;
+  font-size:0;
+}
+.icon .glyph img.broken{
+  /* visible placeholder so a missing asset is noticeable but tidy,
+     rather than a silent gap or overflowing alt text */
+  border:1px dashed var(--faint);
+  background:var(--bg-2);
 }
 .icon .label{
   font-size:10.5px; letter-spacing:.06em; text-align:center;
@@ -886,19 +899,27 @@ function layoutColumnIcons(){
     return;
   }
 
-  const topMargin = 16;
   const bottomMargin = 62; // clears the taskbar + a little breathing room
   const leftMargin = 14;
   const colGap = 84;
   const cols = vw < 340 ? 1 : 2;
   const rows = Math.ceil(colIcons.length / cols);
 
+  // Tall/narrow phone screens (roughly modern-iPhone-shaped and taller)
+  // usually have plenty of spare vertical room, so give them noticeably
+  // more breathing room between rows rather than just the minimum needed
+  // to avoid overlap.
+  const ratio = vw / vh;
+  const tallPhone = ratio <= 0.52;
+  const topMargin = tallPhone ? 26 : 16;
+  const extraBuffer = tallPhone ? 32 : 10;
+
   // Measure the actual rendered icon height (glyph + gap + label, which can
   // wrap to 2 lines depending on the name) instead of guessing a fixed
   // number — a guessed height that's even slightly too small causes rows to
   // overlap each other, which is worse than the original overflow bug.
   const measuredHeight = Math.max(...colIcons.map(icon => icon.getBoundingClientRect().height), 80);
-  const minRowGap = measuredHeight + 10; // small breathing room between rows
+  const minRowGap = measuredHeight + extraBuffer;
 
   const availableH = Math.max(vh - topMargin - bottomMargin - measuredHeight, 80);
   const distributedGap = rows > 1 ? availableH / (rows - 1) : 0;
