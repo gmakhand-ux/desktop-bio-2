@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0a09">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>golam.akhand — desktop</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&display=swap');
@@ -17,13 +21,16 @@
   --line:    #2a2621;
   --win:     #171512;
 }
-*{ box-sizing:border-box; margin:0; padding:0; }
+*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 html,body{ background:var(--bg); color:var(--paper); height:100%; overscroll-behavior:none; }
 body{
   font-family:'JetBrains Mono', monospace;
   overflow:hidden;
   position:relative;
   user-select:none;
+  -webkit-touch-callout:none;
+  height:100vh;
+  height:100dvh;
 }
 a{ color:inherit; }
 ::selection{ background:var(--brick); color:var(--paper); }
@@ -84,7 +91,9 @@ body::after{
 
 /* ============ DESKTOP ============ */
 #desktop{
-  position:relative; width:100%; height:100vh; z-index:3;
+  position:relative; width:100%; z-index:3;
+  height:100vh;
+  height:100dvh;
 }
 
 .icon{
@@ -133,6 +142,7 @@ body::after{
   background:var(--bg-2);
   border-bottom:1px solid var(--line);
   cursor:grab;
+  touch-action:none;
   font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim);
 }
 .win-bar:active{ cursor:grabbing; }
@@ -145,6 +155,12 @@ body::after{
   background:transparent; color:var(--dim);
   font-size:9px; line-height:1;
   cursor:pointer;
+  touch-action:manipulation;
+  position:relative;
+}
+.win-btns button::after{
+  /* invisible larger hit area for touch, doesn't affect visuals */
+  content:""; position:absolute; inset:-10px;
 }
 .win-btns button:hover{ border-color:var(--brick); color:var(--brick); }
 .win-body{
@@ -171,6 +187,7 @@ body::after{
   padding:9px 4px; border-bottom:1px solid var(--line);
   font-size:11.5px; letter-spacing:.04em; color:var(--paper);
   cursor:pointer; display:flex; align-items:center; gap:8px;
+  touch-action:manipulation;
 }
 .frow::before{ content:"—"; color:var(--faint); }
 .frow:hover{ color:var(--brick); }
@@ -184,9 +201,21 @@ body::after{
   display:grid; grid-template-columns:repeat(3, 1fr); gap:7px;
   margin-top:6px;
 }
+.video-wrap{
+  margin-top:6px;
+  border:1px solid var(--line);
+  background:#000;
+}
+.video-wrap video{
+  display:block;
+  width:100%;
+  max-height:50vh;
+  background:#000;
+}
 .wthumb{
   position:relative; aspect-ratio:1/1; overflow:hidden;
   border:1px solid var(--line); background:var(--bg); cursor:pointer;
+  touch-action:manipulation;
 }
 .wthumb img{
   width:100%; height:100%; object-fit:cover; display:block;
@@ -209,6 +238,7 @@ body::after{
 .lightbox .lb-close{
   position:absolute; top:26px; right:34px; font-size:11px; letter-spacing:.1em;
   color:var(--dim); cursor:pointer;
+  touch-action:manipulation;
 }
 .lightbox .lb-close:hover{ color:var(--brick); }
 .lightbox .lb-cap{
@@ -232,17 +262,20 @@ body::after{
   margin-top:16px; display:inline-block;
   border:1px solid var(--paper); padding:5px 16px;
   font-size:10px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
+  touch-action:manipulation;
 }
 .notice .win-body .ok:hover{ border-color:var(--brick); color:var(--brick); }
 
 /* ============ TASKBAR ============ */
 #taskbar{
   position:fixed; left:0; right:0; bottom:0; z-index:30;
-  height:38px;
+  height:calc(38px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
   background:var(--bg-2);
   border-top:1px solid var(--line);
   display:flex; align-items:center;
-  padding:0 10px;
+  padding-left:calc(10px + env(safe-area-inset-left));
+  padding-right:calc(10px + env(safe-area-inset-right));
   gap:10px;
 }
 #startBtn{
@@ -252,18 +285,21 @@ body::after{
   padding:6px 12px;
   border:1px solid var(--line);
   cursor:pointer;
+  touch-action:manipulation;
   background:transparent; color:var(--paper);
+  flex:none;
 }
 #startBtn:hover{ border-color:var(--brick); }
 #startBtn .eye{ width:16px; height:10px; }
 #startBtn .eye .lid{ fill:none; stroke:var(--paper); stroke-width:1.6; }
 #startBtn .eye .pupil{ fill:var(--brick); }
 
-#taskWindows{ display:flex; gap:6px; flex:1; overflow:hidden; }
+#taskWindows{ display:flex; gap:6px; flex:1; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+#taskWindows::-webkit-scrollbar{ display:none; }
 .task-chip{
   font-size:10px; letter-spacing:.06em; text-transform:uppercase;
   padding:6px 10px; border:1px solid var(--line); color:var(--dim);
-  cursor:pointer; white-space:nowrap;
+  cursor:pointer; white-space:nowrap; touch-action:manipulation; flex:none;
 }
 .task-chip.active{ color:var(--paper); border-color:var(--faint); background:var(--bg); }
 .task-chip:hover{ color:var(--paper); }
@@ -272,7 +308,9 @@ body::after{
 
 /* start menu */
 #startMenu{
-  position:fixed; z-index:35; left:10px; bottom:44px;
+  position:fixed; z-index:35;
+  left:calc(10px + env(safe-area-inset-left));
+  bottom:calc(44px + env(safe-area-inset-bottom));
   width:190px;
   background:var(--win); border:1px solid var(--line);
   box-shadow:0 24px 50px rgba(0,0,0,.55);
@@ -300,6 +338,8 @@ body::after{
   padding:10px 14px; color:var(--paper);
   border-bottom:1px solid var(--line);
   letter-spacing:.04em;
+  display:block;
+  touch-action:manipulation;
 }
 #startMenu a:last-child, #startMenu .mi:last-child{ border-bottom:none; }
 #startMenu a:hover, #startMenu .mi:hover{ background:var(--bg-2); color:var(--brick); cursor:pointer; }
@@ -307,7 +347,15 @@ body::after{
 @media(max-width:640px){
   .icon{ width:74px; }
   .icon .glyph{ width:44px; height:44px; }
-  .win{ min-width:88vw; }
+  .win{ min-width:88vw; max-width:96vw; }
+  .win-body{ padding:16px 16px 20px; max-height:56vh; }
+  .work-grid{ grid-template-columns:repeat(3, 1fr); gap:5px; }
+  #startMenu{ width:min(200px, 70vw); }
+  .task-chip{ padding:6px 8px; font-size:9px; }
+}
+
+@media(max-height:700px){
+  .win-body{ max-height:46vh; }
 }
 
 /* ============ TNT EXPLOSION ============ */
@@ -347,44 +395,54 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
 
 <div id="desktop">
   <!-- icons -->
-  <div class="icon" style="left:24px; top:24px;" data-win="work">
+  <div class="icon col-icon" style="left:24px; top:24px;" data-win="work">
     <div class="glyph"><img src="pictures/work.png" alt="pictures"></div>
     <div class="label">pictures</div>
   </div>
 
-  <div class="icon" style="left:24px; top:112px;" data-win="about">
+  <div class="icon col-icon" style="left:24px; top:112px;" data-win="about">
     <div class="glyph"><img src="pictures/about.png" alt="about"></div>
     <div class="label">about</div>
   </div>
 
-  <div class="icon" style="left:24px; top:200px;" data-win="moto">
+  <div class="icon col-icon" style="left:24px; top:200px;" data-win="moto">
     <div class="glyph"><svg viewBox="0 0 52 52"><rect x="10" y="4" width="32" height="44" fill="none" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="16" x2="36" y2="16" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="24" x2="36" y2="24" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="32" x2="30" y2="32" stroke="var(--paper)" stroke-width="2"/></svg></div>
     <div class="label">moto.txt</div>
   </div>
 
-  <div class="icon" style="left:24px; top:288px;" data-win="interests">
+  <div class="icon col-icon" style="left:24px; top:288px;" data-win="interests">
     <div class="glyph"><svg viewBox="0 0 52 52"><path d="M4 14 L4 44 L48 44 L48 18 L26 18 L22 12 L4 12 Z" fill="none" stroke="var(--paper)" stroke-width="2"/></svg></div>
     <div class="label">interests/</div>
   </div>
 
-  <div class="icon" style="left:24px; top:376px;" data-win="skills">
+  <div class="icon col-icon" style="left:24px; top:376px;" data-win="skills">
     <div class="glyph"><svg viewBox="0 0 52 52"><path d="M4 14 L4 44 L48 44 L48 18 L26 18 L22 12 L4 12 Z" fill="none" stroke="var(--paper)" stroke-width="2"/></svg></div>
     <div class="label">skills/</div>
   </div>
 
-  <div class="icon" style="left:24px; top:464px;" data-win="cool">
+  <div class="icon col-icon" style="left:24px; top:464px;" data-win="cool">
     <div class="glyph"><svg viewBox="0 0 52 52"><rect x="10" y="4" width="32" height="44" fill="none" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="16" x2="36" y2="16" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="24" x2="36" y2="24" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="32" x2="30" y2="32" stroke="var(--paper)" stroke-width="2"/></svg></div>
     <div class="label">Cool.txt</div>
   </div>
 
-  <div class="icon" style="left:24px; top:552px;" data-win="contact">
+  <div class="icon col-icon" style="left:24px; top:552px;" data-win="contact">
     <div class="glyph"><img src="pictures/contact.png" alt="contact"></div>
     <div class="label">contact</div>
   </div>
 
-  <div class="icon" style="left:24px; top:640px;" data-win="readme">
+  <div class="icon col-icon" style="left:24px; top:640px;" data-win="readme">
     <div class="glyph"><img src="pictures/readme.png" alt="read_me.txt"></div>
     <div class="label">read_me.txt</div>
+  </div>
+
+  <div class="icon col-icon" style="left:24px; top:728px;" data-win="video">
+    <div class="glyph">
+      <svg viewBox="0 0 52 52">
+        <path d="M4 14 L4 44 L48 44 L48 18 L26 18 L22 12 L4 12 Z" fill="none" stroke="var(--paper)" stroke-width="2"/>
+        <path d="M21 22 L34 29 L21 36 Z" fill="var(--brick)"/>
+      </svg>
+    </div>
+    <div class="label">video/</div>
   </div>
 
   <div class="icon" style="right:28px; bottom:64px;" data-win="trash">
@@ -422,6 +480,23 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
         <div class="wthumb" data-full="pictures/ali-flag.jpg" data-cap="archive — flag"><img src="pictures/ali-flag.jpg" alt="Archive photo with flag"></div>
       </div>
       <div class="stamp">click a piece to view full size</div>
+    </div>
+  </div>
+
+  <div class="win" id="win-video" style="left:150px; top:90px; width:400px;">
+    <div class="win-bar" data-drag>
+      <span class="win-title"><span class="dot"></span>video/</span>
+      <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
+    </div>
+    <div class="win-body">
+      <h3>video</h3>
+      <div class="video-wrap">
+        <video controls preload="metadata" poster="videos/clip-poster.jpg">
+          <source src="videos/clip.mp4" type="video/mp4">
+          your browser doesn't support embedded video — <a href="videos/clip.mp4">download it here</a> instead.
+        </video>
+      </div>
+      <div class="stamp">clip.mp4</div>
     </div>
   </div>
 
@@ -693,6 +768,7 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
   <a href="mailto:GmAkhand@gmail.com">email</a>
   <a href="https://www.instagram.com/2ui_tara" target="_blank">instagram</a>
   <div class="mi" data-win="work">pictures/</div>
+  <div class="mi" data-win="video">video/</div>
   <div class="mi" data-win="about">about.txt</div>
   <div class="mi" data-win="interests">interests/</div>
   <div class="mi" data-win="skills">skills/</div>
@@ -743,12 +819,15 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
   }
 
   let mx = 0, my = 0, tx = 0, ty = 0, hasMouse = false;
-  window.addEventListener('pointermove', (e) => {
-    mx = (e.clientX / w) - 0.5;
-    my = (e.clientY / h) - 0.5;
-    hasMouse = true;
-    glowWrap.style.transform = `translate(${mx * -34}px, ${my * -30}px)`;
-  });
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
+  if(finePointer){
+    window.addEventListener('pointermove', (e) => {
+      mx = (e.clientX / w) - 0.5;
+      my = (e.clientY / h) - 0.5;
+      hasMouse = true;
+      glowWrap.style.transform = `translate(${mx * -34}px, ${my * -30}px)`;
+    });
+  }
 
   function draw(){
     ctx.clearRect(0, 0, w, h);
@@ -779,6 +858,59 @@ const windows = document.querySelectorAll('.win');
 const icons = document.querySelectorAll('.icon');
 const taskWindows = document.getElementById('taskWindows');
 let z = 10;
+
+/* ============ RESPONSIVE ICON LAYOUT ============
+   The main icon column uses fixed left/top pixel offsets, which is fine on
+   tall desktop viewports but overflows off-screen on short/narrow mobile
+   viewports (the page has overflow:hidden, so those icons would become
+   completely unreachable). On compact viewports we reflow the column icons
+   into a 2-column grid sized to fit; on regular viewports we restore the
+   original hand-placed positions. */
+const colIcons = Array.from(document.querySelectorAll('.icon.col-icon'));
+colIcons.forEach(icon=>{
+  icon.dataset.origLeft = icon.style.left;
+  icon.dataset.origTop = icon.style.top;
+});
+
+function layoutColumnIcons(){
+  if(!colIcons.length) return;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const compact = vw <= 640 || vh <= 700;
+
+  if(!compact){
+    colIcons.forEach(icon=>{
+      icon.style.left = icon.dataset.origLeft;
+      icon.style.top = icon.dataset.origTop;
+    });
+    return;
+  }
+
+  const topMargin = 16;
+  const bottomMargin = 62; // clears the taskbar + a little breathing room
+  const leftMargin = 14;
+  const colGap = 84;
+  const cols = vw < 340 ? 1 : 2;
+  const rows = Math.ceil(colIcons.length / cols);
+  const availableH = Math.max(vh - topMargin - bottomMargin, 120);
+  const rowGap = rows > 1 ? Math.min(96, availableH / (rows - 1)) : 0;
+
+  colIcons.forEach((icon, i)=>{
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    icon.style.left = (leftMargin + col * colGap) + 'px';
+    icon.style.top = (topMargin + row * rowGap) + 'px';
+  });
+}
+
+let resizeTimer = null;
+function scheduleLayout(){
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(layoutColumnIcons, 120);
+}
+layoutColumnIcons();
+window.addEventListener('resize', scheduleLayout);
+window.addEventListener('orientationchange', scheduleLayout);
 
 function bringFront(win){
   z += 1;
@@ -898,8 +1030,12 @@ function makeDraggable(el, handle, container){
   });
   handle.addEventListener('pointermove', (e)=>{
     if(!dragging) return;
-    el.style.left = (e.clientX - ox) + 'px';
-    el.style.top = (e.clientY - oy) + 'px';
+    const maxLeft = window.innerWidth - Math.min(el.offsetWidth, window.innerWidth * 0.9);
+    const maxTop = window.innerHeight - 40; // keep at least the bar/label reachable
+    const nextLeft = Math.min(Math.max(e.clientX - ox, -el.offsetWidth * 0.5), Math.max(maxLeft, 0));
+    const nextTop = Math.min(Math.max(e.clientY - oy, 0), maxTop);
+    el.style.left = nextLeft + 'px';
+    el.style.top = nextTop + 'px';
   });
   handle.addEventListener('pointerup', (e)=>{
     dragging = false;
