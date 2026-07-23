@@ -890,10 +890,13 @@ function layoutColumnIcons(){
   const bottomMargin = 62; // clears the taskbar + a little breathing room
   const leftMargin = 14;
   const colGap = 84;
+  const iconBoxHeight = 96; // conservative estimate: padding + glyph + gap + a 2-line label
   const cols = vw < 340 ? 1 : 2;
   const rows = Math.ceil(colIcons.length / cols);
-  const availableH = Math.max(vh - topMargin - bottomMargin, 120);
-  const rowGap = rows > 1 ? Math.min(96, availableH / (rows - 1)) : 0;
+  // leave room for the LAST row's own height, not just its top edge —
+  // otherwise the bottom row's label can overlap whatever sits below it.
+  const availableH = Math.max(vh - topMargin - bottomMargin - iconBoxHeight, 80);
+  const rowGap = rows > 1 ? Math.min(92, availableH / (rows - 1)) : 0;
 
   colIcons.forEach((icon, i)=>{
     const col = i % cols;
