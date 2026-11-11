@@ -398,6 +398,247 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
 .tnt-canvas{
   position:fixed; inset:0; z-index:150; pointer-events:none;
 }
+
+/* ============ GLOSSY TASKBAR, OPEN ANIMATIONS, 3D ICONS (override layer) ============ */
+#taskbar{
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,.24) 0%, rgba(255,255,255,.07) 49%, rgba(0,0,0,.22) 51%, rgba(0,0,0,.4) 100%),
+    linear-gradient(to bottom, rgba(38,33,30,.78), rgba(10,9,8,.9));
+  -webkit-backdrop-filter:blur(14px) saturate(1.5);
+  backdrop-filter:blur(14px) saturate(1.5);
+  border-top:1px solid rgba(255,255,255,.3);
+  box-shadow:0 -10px 28px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(0,0,0,.6);
+  overflow:hidden;
+  animation:tbRise .75s cubic-bezier(.2,.9,.25,1.08) .15s backwards;
+}
+#taskbar > *{ position:relative; z-index:1; }
+@keyframes tbRise{
+  0%{ transform:translateY(110%); opacity:0; }
+  70%{ opacity:1; }
+  100%{ transform:none; opacity:1; }
+}
+
+#startBtn{
+  border:1px solid rgba(255,255,255,.3); border-radius:6px;
+  background:linear-gradient(to bottom, rgba(255,255,255,.3) 0%, rgba(255,255,255,.08) 49%, rgba(0,0,0,.25) 51%, rgba(184,70,44,.5) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.65);
+  text-shadow:0 1px 2px rgba(0,0,0,.75);
+  transition:transform .18s cubic-bezier(.3,1.5,.5,1), box-shadow .2s ease, filter .2s ease, border-color .2s ease;
+}
+#startBtn:hover{
+  border-color:rgba(255,255,255,.55); filter:brightness(1.18); transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(0,0,0,.45), 0 4px 12px rgba(0,0,0,.6), 0 0 16px rgba(184,70,44,.65);
+}
+#startBtn:active{ transform:translateY(1px) scale(.97); filter:brightness(.92); }
+#startBtn .eye{ filter:drop-shadow(0 1px 2px rgba(0,0,0,.85)); transition:transform .28s cubic-bezier(.3,1.7,.5,1); }
+#startBtn:hover .eye{ transform:scale(1.28) translateY(-1px); }
+
+#taskWindows{ padding:8px 3px; margin:-8px 0; }
+.task-chip{
+  border-radius:5px; border:1px solid rgba(255,255,255,.2);
+  background:linear-gradient(to bottom, rgba(255,255,255,.17) 0%, rgba(255,255,255,.04) 49%, rgba(0,0,0,.22) 51%, rgba(255,255,255,.05) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 1px 3px rgba(0,0,0,.55);
+  text-shadow:0 1px 2px rgba(0,0,0,.7);
+  transition:transform .2s cubic-bezier(.3,1.5,.5,1), box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+  animation:chipPop .5s cubic-bezier(.2,1.5,.4,1) backwards;
+}
+.task-chip:hover{
+  color:var(--paper); transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38), 0 5px 12px rgba(0,0,0,.6), 0 0 12px rgba(184,70,44,.35);
+}
+.task-chip.active{
+  color:var(--paper); border-color:rgba(214,96,66,.85);
+  background:linear-gradient(to bottom, rgba(255,255,255,.32) 0%, rgba(255,255,255,.1) 49%, rgba(184,70,44,.4) 51%, rgba(184,70,44,.65) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 6px rgba(184,70,44,.5), 0 0 12px rgba(184,70,44,.5);
+}
+@keyframes chipPop{
+  0%{ opacity:0; transform:translateY(16px) scale(.6); }
+  100%{ opacity:1; transform:none; }
+}
+#clock{ color:var(--paper); text-shadow:0 1px 2px rgba(0,0,0,.8); padding:4px 0 4px 12px; border-left:1px solid rgba(255,255,255,.16); }
+
+/* windows + start menu open with a pop up from the taskbar */
+.win.open{ transform-origin:50% 100%; animation:winOpen .38s cubic-bezier(.2,.9,.3,1.12) backwards; }
+@keyframes winOpen{
+  0%{ opacity:0; transform:translateY(46px) scale(.86); }
+  55%{ opacity:1; }
+  100%{ opacity:1; transform:none; }
+}
+#startMenu.open{ transform-origin:0 100%; animation:menuUp .26s cubic-bezier(.2,.9,.3,1.1) backwards; }
+@keyframes menuUp{
+  0%{ opacity:0; transform:translateY(16px) scale(.94); }
+  100%{ opacity:1; transform:none; }
+}
+
+/* 3D pop on desktop icons */
+.icon{ perspective:520px; }
+.icon .glyph{
+  transition:transform .3s cubic-bezier(.2,1.5,.4,1);
+  will-change:transform;
+}
+.icon .glyph img, .icon .glyph svg{
+  filter:drop-shadow(0 1px 0 rgba(255,255,255,.22)) drop-shadow(0 3px 2px rgba(0,0,0,.6)) drop-shadow(0 9px 9px rgba(0,0,0,.45));
+  transition:filter .3s ease;
+}
+.icon:hover .glyph{ transform:translateY(-6px) scale(1.16) rotateX(12deg) rotateY(-9deg); }
+.icon:hover .glyph img, .icon:hover .glyph svg{
+  filter:drop-shadow(0 1px 0 rgba(255,255,255,.35)) drop-shadow(0 7px 3px rgba(0,0,0,.5)) drop-shadow(0 18px 14px rgba(0,0,0,.5)) drop-shadow(0 0 10px rgba(184,70,44,.4)) brightness(1.12);
+}
+.icon.selected .glyph{ transform:translateY(-3px) scale(1.08); }
+.icon.selected .glyph img, .icon.selected .glyph svg{
+  filter:drop-shadow(0 1px 0 rgba(255,255,255,.3)) drop-shadow(0 5px 3px rgba(0,0,0,.55)) drop-shadow(0 12px 10px rgba(0,0,0,.45)) drop-shadow(0 0 8px rgba(184,70,44,.5));
+}
+.icon:active .glyph{ transform:translateY(1px) scale(.96); }
+
+@media (prefers-reduced-motion:reduce){
+  #taskbar, #taskbar::before, .task-chip, .win.open, #startMenu.open{ animation:none; }
+  .icon .glyph{ transition:none; }
+}
+
+/* 3D folders: papers rise and the flap dips on hover */
+.fd-papers, .fd-front{ transition:transform .3s cubic-bezier(.2,1.5,.4,1); }
+.icon:hover .fd-papers, .icon.selected .fd-papers{ transform:translateY(-4px); }
+.icon:hover .fd-front, .icon.selected .fd-front{ transform:translateY(1.5px); }
+@media (prefers-reduced-motion:reduce){ .fd-papers, .fd-front{ transition:none; } }
+
+/* start button: icon only */
+#startBtn{ padding:5px 16px; border-radius:18px; }
+#startBtn .eye{ width:24px; height:15px; }
+#startBtn .eye .lid{ stroke-width:1.8; }
+#startBtn .eye .pupil{ filter:drop-shadow(0 0 3px rgba(184,70,44,.95)); }
+
+/* video play button pops on hover */
+.vd-play{ transform-box:fill-box; transform-origin:center; transition:transform .3s cubic-bezier(.2,1.6,.4,1); }
+.icon:hover .vd-play, .icon.selected .vd-play{ transform:scale(1.18); }
+@media (prefers-reduced-motion:reduce){ .vd-play{ transition:none; } }
+
+/* ============ 3D ROUNDED POP-UP WINDOWS WITH SHINY BARS ============ */
+.win{
+  border-radius:14px; overflow:hidden;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(to bottom, #1e1b17, #131110);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.6),
+    0 2px 4px rgba(0,0,0,.5), 0 14px 28px rgba(0,0,0,.5), 0 30px 60px rgba(0,0,0,.45);
+}
+.win-bar{
+  position:relative; overflow:hidden; padding:9px 12px;
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,.28) 0%, rgba(255,255,255,.08) 49%, rgba(0,0,0,.22) 51%, rgba(0,0,0,.4) 100%),
+    linear-gradient(to bottom, #3b352e, #1b1814);
+  border-bottom:1px solid rgba(0,0,0,.75);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38), 0 3px 8px rgba(0,0,0,.4);
+  text-shadow:0 1px 2px rgba(0,0,0,.7);
+}
+.win-bar > *{ position:relative; z-index:1; }
+.win-bar::before{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent calc(var(--sx,50) * 1% - 20%), rgba(255,255,255,.55) calc(var(--sx,50) * 1%), transparent calc(var(--sx,50) * 1% + 20%));
+  opacity:calc(.2 + var(--si,0) * .8);
+  pointer-events:none;
+}
+
+.win-btns button{
+  width:18px; height:18px; border-radius:50%; color:var(--paper);
+  border:1px solid rgba(255,255,255,.3);
+  background:radial-gradient(circle at 35% 28%, rgba(255,255,255,.6), rgba(255,255,255,.1) 45%, rgba(0,0,0,.35));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 1px 3px rgba(0,0,0,.6);
+  transition:transform .18s cubic-bezier(.3,1.6,.5,1), filter .2s ease;
+}
+.win-btns button:hover{ color:#fff; border-color:rgba(255,255,255,.5); transform:scale(1.18); filter:brightness(1.2); }
+.win-btns button[data-close]:hover{ background:radial-gradient(circle at 35% 28%, #ffa58c, #b8462c 60%, #6b2314); }
+.win-btns button:active{ transform:scale(.92); }
+
+/* ============ IPHONE-STYLE GLASS FOLDER WINDOWS ============ */
+.win.glass{
+  border-radius:24px;
+  background:linear-gradient(135deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,.07) 45%, rgba(255,255,255,.13) 100%);
+  -webkit-backdrop-filter:blur(26px) saturate(1.8);
+  backdrop-filter:blur(26px) saturate(1.8);
+  border:1px solid rgba(255,255,255,.34);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.7), inset 1.5px 0 0 rgba(255,255,255,.25),
+    inset 0 -1.5px 0 rgba(255,255,255,.12), inset 0 0 34px rgba(255,255,255,.07),
+    0 10px 30px rgba(0,0,0,.4), 0 30px 70px rgba(0,0,0,.45);
+}
+.win.glass::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(120% 55% at calc(var(--sx,12) * 1%) calc(var(--sy,-8) * 1%), rgba(255,255,255,.34), transparent 58%);
+  opacity:calc(.6 + var(--si,0) * .4);
+}
+.win.glass .win-bar{
+  background:linear-gradient(to bottom, rgba(255,255,255,.3), rgba(255,255,255,.05));
+  border-bottom:1px solid rgba(255,255,255,.22);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  color:rgba(255,255,255,.8); text-shadow:0 1px 2px rgba(0,0,0,.35);
+}
+.win.glass .win-btns button{
+  color:transparent; border:1px solid rgba(0,0,0,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 1px 3px rgba(0,0,0,.35);
+}
+.win.glass .win-btns button[data-close]{ background:radial-gradient(circle at 35% 28%, #ffb0a0, #ff5f57 60%, #c4372f); }
+.win.glass .win-btns button[data-min]{ background:radial-gradient(circle at 35% 28%, #ffe29a, #febc2e 60%, #c48a10); }
+.win.glass .win-btns button:hover{ color:rgba(0,0,0,.65); }
+.win.glass .win-body{ color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35); }
+.win.glass .win-body h3{ color:#fff; }
+.win.glass .win-body .stamp{ color:rgba(255,255,255,.65); }
+.win.glass .folder-list{ border-top:none; display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.win.glass .frow{
+  padding:11px 14px; border:1px solid rgba(255,255,255,.3); border-radius:15px;
+  background:linear-gradient(to bottom, rgba(255,255,255,.28), rgba(255,255,255,.08));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.25);
+  color:#fff; font-size:12px;
+  transition:transform .22s cubic-bezier(.2,1.5,.4,1), background .2s ease, box-shadow .2s ease;
+}
+.win.glass .frow::before{
+  content:""; width:8px; height:8px; border-radius:50%; flex:none;
+  background:radial-gradient(circle at 35% 30%, #fff, rgba(184,70,44,.95));
+  box-shadow:0 0 7px rgba(184,70,44,.75);
+}
+.win.glass .frow:hover{
+  color:#fff; transform:translateY(-2px) scale(1.02);
+  background:linear-gradient(to bottom, rgba(255,255,255,.4), rgba(255,255,255,.14));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 8px 18px rgba(0,0,0,.35), 0 0 14px rgba(184,70,44,.3);
+}
+.win.glass .frow:active{ transform:scale(.98); }
+
+@media (prefers-reduced-motion:reduce){
+  .win-btns button, .win.glass .frow{ transition:none; }
+}
+
+/* start button eye: blinks and glances now and then */
+#startBtn .eye .eye-parts{ transform-box:fill-box; transform-origin:center; }
+#startBtn .eye.blink .eye-parts{ animation:eyeBlink .24s ease-in-out; }
+@keyframes eyeBlink{
+  0%{ transform:scaleY(1); }
+  45%{ transform:scaleY(.06); }
+  100%{ transform:scaleY(1); }
+}
+#startBtn .eye .pupil{ transform:translateX(var(--gx,0px)); transition:transform .25s ease; }
+
+
+/* windows 7 style large-icon view for the interests files */
+.win.glass .folder-list.icons{ display:grid; grid-template-columns:repeat(2, 1fr); gap:10px 6px; margin-top:12px; }
+.win.glass .frow.ficon{
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+  padding:10px 6px 8px; font-size:11px; text-align:center;
+  border:1px solid transparent; border-radius:6px; background:none; box-shadow:none;
+  transition:background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.win.glass .frow.ficon::before{ content:none; display:none; }
+.win.glass .frow.ficon .fi{
+  width:52px; height:60px; filter:drop-shadow(3px 4px 3px rgba(0,0,0,.5));
+  transition:transform .25s cubic-bezier(.2,1.5,.4,1);
+}
+.win.glass .frow.ficon:hover{
+  transform:none;
+  background:linear-gradient(to bottom, rgba(255,255,255,.3), rgba(255,255,255,.1));
+  border-color:rgba(255,255,255,.5);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25), 0 0 10px rgba(255,255,255,.12);
+}
+.win.glass .frow.ficon:hover .fi{ transform:translateY(-3px) scale(1.06); }
+.win.glass .frow.ficon:active{ transform:none; background:rgba(255,255,255,.22); }
+@media (prefers-reduced-motion:reduce){ .win.glass .frow.ficon, .win.glass .frow.ficon .fi{ transition:none; } }
 </style>
 </head>
 <body>
@@ -405,6 +646,8 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
 <canvas id="bgCanvas"></canvas>
 <div id="bgRays"></div>
 <div id="bgGlowWrap"><div id="bgGlow"></div></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="fdBack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdbd9f"/><stop offset="1" stop-color="#7d6e56"/></linearGradient><linearGradient id="fdFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4ecdc"/><stop offset=".55" stop-color="#d8ccb4"/><stop offset="1" stop-color="#a99a7e"/></linearGradient><linearGradient id="fdGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="docFace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8f2e4"/><stop offset=".6" stop-color="#ddd1b9"/><stop offset="1" stop-color="#b2a487"/></linearGradient><linearGradient id="docFold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#a99a7e"/></linearGradient><linearGradient id="vidFace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#554e45"/><stop offset=".5" stop-color="#2a251f"/><stop offset="1" stop-color="#0f0d0b"/></linearGradient><linearGradient id="vidPlay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ee7556"/><stop offset="1" stop-color="#8c3220"/></linearGradient><linearGradient id="wtPage" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9e2ee"/></linearGradient><linearGradient id="wtFold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#b9c4d4"/></linearGradient></defs></svg>
 
 <div id="desktop">
   <!-- icons -->
@@ -419,22 +662,22 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
   </div>
 
   <div class="icon col-icon" style="left:24px; top:200px;" data-win="moto">
-    <div class="glyph"><svg viewBox="0 0 52 52"><rect x="10" y="4" width="32" height="44" fill="none" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="16" x2="36" y2="16" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="24" x2="36" y2="24" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="32" x2="30" y2="32" stroke="var(--paper)" stroke-width="2"/></svg></div>
+    <div class="glyph"><svg viewBox="0 0 52 52"><path d="M44 15 L44 47 L47.5 44.5 L47.5 17.5 Z" fill="#6d6150"/><path d="M12 5 L34 5 L44 15 L44 47 L12 47 Z" fill="url(#docFace)"/><path d="M12 5 L34 5 L44 15 L44 24 L12 24 Z" fill="url(#fdGloss)"/><path d="M34 5 L34 15 L44 15 Z" fill="url(#docFold)"/><path d="M12 5 L34 5 L44 15" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.2"/><g fill="#8a7a62"><rect x="17" y="20" width="22" height="2" rx="1"/><rect x="17" y="25" width="22" height="2" rx="1"/><rect x="17" y="30" width="15" height="2" rx="1"/></g><rect x="17" y="36" width="14" height="6" rx="1.5" fill="#b8462c"/><rect x="17" y="36" width="14" height="3" rx="1.5" fill="#fff" fill-opacity=".25"/><text x="24" y="40.7" font-size="4.2" font-weight="700" fill="#ece4d6" text-anchor="middle" font-family="JetBrains Mono, monospace">TXT</text><path d="M12 47 L44 47" stroke="#000" stroke-opacity=".4" stroke-width="1.2"/></svg></div>
     <div class="label">moto.txt</div>
   </div>
 
   <div class="icon col-icon" style="left:24px; top:288px;" data-win="interests">
-    <div class="glyph"><svg viewBox="0 0 52 52"><path d="M4 14 L4 44 L48 44 L48 18 L26 18 L22 12 L4 12 Z" fill="none" stroke="var(--paper)" stroke-width="2"/></svg></div>
+    <div class="glyph"><svg viewBox="0 0 52 52"><path d="M4 11 L19 11 L23 16 L48 16 L48 43 L4 43 Z" fill="url(#fdBack)"/><path d="M4 11 L19 11 L23 16 L48 16" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1"/><g class="fd-papers"><rect x="8" y="16" width="34" height="14" rx="1" fill="#f6f0e2" transform="rotate(-3 25 23)"/><rect x="9" y="18" width="34" height="14" rx="1" fill="#e2d7c0" transform="rotate(2 26 25)"/></g><g class="fd-front"><path d="M49 25 L47 46 L50.5 43.5 L52 27.5 Z" fill="#6d6150"/><path d="M3 25 L49 25 L47 46 L5 46 Z" fill="url(#fdFront)"/><rect x="3" y="25" width="46" height="9" fill="url(#fdGloss)"/><path d="M3 25 L49 25" stroke="#fff" stroke-opacity=".8" stroke-width="1.4"/><path d="M5 46 L47 46" stroke="#000" stroke-opacity=".4" stroke-width="1.2"/></g></svg></div>
     <div class="label">interests/</div>
   </div>
 
   <div class="icon col-icon" style="left:24px; top:376px;" data-win="skills">
-    <div class="glyph"><svg viewBox="0 0 52 52"><path d="M4 14 L4 44 L48 44 L48 18 L26 18 L22 12 L4 12 Z" fill="none" stroke="var(--paper)" stroke-width="2"/></svg></div>
+    <div class="glyph"><svg viewBox="0 0 52 52"><path d="M4 11 L19 11 L23 16 L48 16 L48 43 L4 43 Z" fill="url(#fdBack)"/><path d="M4 11 L19 11 L23 16 L48 16" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1"/><g class="fd-papers"><rect x="8" y="16" width="34" height="14" rx="1" fill="#f6f0e2" transform="rotate(-3 25 23)"/><rect x="9" y="18" width="34" height="14" rx="1" fill="#e2d7c0" transform="rotate(2 26 25)"/></g><g class="fd-front"><path d="M49 25 L47 46 L50.5 43.5 L52 27.5 Z" fill="#6d6150"/><path d="M3 25 L49 25 L47 46 L5 46 Z" fill="url(#fdFront)"/><rect x="3" y="25" width="46" height="9" fill="url(#fdGloss)"/><path d="M3 25 L49 25" stroke="#fff" stroke-opacity=".8" stroke-width="1.4"/><path d="M5 46 L47 46" stroke="#000" stroke-opacity=".4" stroke-width="1.2"/></g></svg></div>
     <div class="label">skills/</div>
   </div>
 
   <div class="icon col-icon" style="left:24px; top:464px;" data-win="cool">
-    <div class="glyph"><svg viewBox="0 0 52 52"><rect x="10" y="4" width="32" height="44" fill="none" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="16" x2="36" y2="16" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="24" x2="36" y2="24" stroke="var(--paper)" stroke-width="2"/><line x1="16" y1="32" x2="30" y2="32" stroke="var(--paper)" stroke-width="2"/></svg></div>
+    <div class="glyph"><svg viewBox="0 0 52 52"><path d="M44 15 L44 47 L47.5 44.5 L47.5 17.5 Z" fill="#6d6150"/><path d="M12 5 L34 5 L44 15 L44 47 L12 47 Z" fill="url(#docFace)"/><path d="M12 5 L34 5 L44 15 L44 24 L12 24 Z" fill="url(#fdGloss)"/><path d="M34 5 L34 15 L44 15 Z" fill="url(#docFold)"/><path d="M12 5 L34 5 L44 15" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.2"/><g fill="#8a7a62"><rect x="17" y="20" width="22" height="2" rx="1"/><rect x="17" y="25" width="22" height="2" rx="1"/><rect x="17" y="30" width="15" height="2" rx="1"/></g><rect x="17" y="36" width="14" height="6" rx="1.5" fill="#b8462c"/><rect x="17" y="36" width="14" height="3" rx="1.5" fill="#fff" fill-opacity=".25"/><text x="24" y="40.7" font-size="4.2" font-weight="700" fill="#ece4d6" text-anchor="middle" font-family="JetBrains Mono, monospace">TXT</text><path d="M12 47 L44 47" stroke="#000" stroke-opacity=".4" stroke-width="1.2"/></svg></div>
     <div class="label">Cool.txt</div>
   </div>
 
@@ -450,10 +693,7 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
 
   <div class="icon col-icon" style="left:24px; top:728px;" data-win="video">
     <div class="glyph">
-      <svg viewBox="0 0 52 52">
-        <path d="M4 14 L4 44 L48 44 L48 18 L26 18 L22 12 L4 12 Z" fill="none" stroke="var(--paper)" stroke-width="2"/>
-        <path d="M21 22 L34 29 L21 36 Z" fill="var(--brick)"/>
-      </svg>
+      <svg viewBox="0 0 52 52"><rect x="7" y="15" width="40" height="28" rx="3.5" fill="#1a1612"/><rect x="5" y="12" width="40" height="28" rx="3.5" fill="url(#vidFace)" stroke="#fff" stroke-opacity=".28"/><g fill="#ece4d6" fill-opacity=".55"><rect x="8.0" y="14.6" width="3" height="2.4" rx=".6"/><rect x="8.0" y="35.2" width="3" height="2.4" rx=".6"/><rect x="14.2" y="14.6" width="3" height="2.4" rx=".6"/><rect x="14.2" y="35.2" width="3" height="2.4" rx=".6"/><rect x="20.4" y="14.6" width="3" height="2.4" rx=".6"/><rect x="20.4" y="35.2" width="3" height="2.4" rx=".6"/><rect x="26.6" y="14.6" width="3" height="2.4" rx=".6"/><rect x="26.6" y="35.2" width="3" height="2.4" rx=".6"/><rect x="32.8" y="14.6" width="3" height="2.4" rx=".6"/><rect x="32.8" y="35.2" width="3" height="2.4" rx=".6"/><rect x="39.0" y="14.6" width="3" height="2.4" rx=".6"/><rect x="39.0" y="35.2" width="3" height="2.4" rx=".6"/></g><g class="vd-play"><path d="M20.5 18.5 L33.5 26 L20.5 33.5 Z" fill="url(#vidPlay)" stroke="#fff" stroke-opacity=".55" stroke-width=".8" stroke-linejoin="round"/></g><path d="M5 16 Q5 12 8.5 12 L41.5 12 Q45 12 45 16 L45 25 Q25 30 5 25 Z" fill="url(#fdGloss)"/></svg>
     </div>
     <div class="label">video/</div>
   </div>
@@ -537,18 +777,18 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
     </div>
   </div>
 
-  <div class="win" id="win-interests" style="left:230px; top:100px; width:280px;">
+  <div class="win glass" id="win-interests" style="left:230px; top:100px; width:320px;">
     <div class="win-bar" data-drag>
       <span class="win-title"><span class="dot"></span>interests/</span>
       <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
     </div>
     <div class="win-body">
       <h3>interests</h3>
-      <div class="folder-list">
-        <div class="frow" data-win="art">art.txt</div>
-        <div class="frow" data-win="tech">tech.txt</div>
-        <div class="frow" data-win="psych">psychology.txt</div>
-        <div class="frow" data-win="photo">photography.txt</div>
+      <div class="folder-list icons">
+        <div class="frow ficon" data-win="art"><svg class="fi" viewBox="0 0 48 56"><path d="M6 4 H30 L42 16 V52 H6 Z" fill="url(#wtPage)" stroke="#8c98a8" stroke-width="1.2" stroke-linejoin="round"/><path d="M30 4 V16 H42 Z" fill="url(#wtFold)" stroke="#8c98a8" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 5.2 H29.6 L40.8 16.4" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1"/><g stroke="#5b86c5" stroke-width="1.6" stroke-linecap="round" opacity=".85"><path d="M12 24 H36"/><path d="M12 30 H36"/><path d="M12 36 H36"/><path d="M12 42 H28"/></g></svg><span>art.txt</span></div>
+        <div class="frow ficon" data-win="tech"><svg class="fi" viewBox="0 0 48 56"><path d="M6 4 H30 L42 16 V52 H6 Z" fill="url(#wtPage)" stroke="#8c98a8" stroke-width="1.2" stroke-linejoin="round"/><path d="M30 4 V16 H42 Z" fill="url(#wtFold)" stroke="#8c98a8" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 5.2 H29.6 L40.8 16.4" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1"/><g stroke="#5b86c5" stroke-width="1.6" stroke-linecap="round" opacity=".85"><path d="M12 24 H36"/><path d="M12 30 H36"/><path d="M12 36 H36"/><path d="M12 42 H28"/></g></svg><span>tech.txt</span></div>
+        <div class="frow ficon" data-win="psych"><svg class="fi" viewBox="0 0 48 56"><path d="M6 4 H30 L42 16 V52 H6 Z" fill="url(#wtPage)" stroke="#8c98a8" stroke-width="1.2" stroke-linejoin="round"/><path d="M30 4 V16 H42 Z" fill="url(#wtFold)" stroke="#8c98a8" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 5.2 H29.6 L40.8 16.4" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1"/><g stroke="#5b86c5" stroke-width="1.6" stroke-linecap="round" opacity=".85"><path d="M12 24 H36"/><path d="M12 30 H36"/><path d="M12 36 H36"/><path d="M12 42 H28"/></g></svg><span>psychology.txt</span></div>
+        <div class="frow ficon" data-win="photo"><svg class="fi" viewBox="0 0 48 56"><path d="M6 4 H30 L42 16 V52 H6 Z" fill="url(#wtPage)" stroke="#8c98a8" stroke-width="1.2" stroke-linejoin="round"/><path d="M30 4 V16 H42 Z" fill="url(#wtFold)" stroke="#8c98a8" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 5.2 H29.6 L40.8 16.4" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1"/><g stroke="#5b86c5" stroke-width="1.6" stroke-linecap="round" opacity=".85"><path d="M12 24 H36"/><path d="M12 30 H36"/><path d="M12 36 H36"/><path d="M12 42 H28"/></g></svg><span>photography.txt</span></div>
       </div>
       <div class="stamp">click a file to open</div>
     </div>
@@ -594,7 +834,7 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
     </div>
   </div>
 
-  <div class="win" id="win-skills" style="left:250px; top:110px; width:280px;">
+  <div class="win glass" id="win-skills" style="left:250px; top:110px; width:280px;">
     <div class="win-bar" data-drag>
       <span class="win-title"><span class="dot"></span>skills/</span>
       <span class="win-btns"><button data-min>_</button><button data-close>×</button></span>
@@ -789,9 +1029,8 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
 </div>
 
 <div id="taskbar">
-  <button id="startBtn">
-    <svg class="eye" viewBox="0 0 64 40"><path class="lid" d="M2,20 Q32,-4 62,20 Q32,44 2,20 Z"/><circle class="pupil" cx="32" cy="20" r="7"/></svg>
-    golam akhand
+  <button id="startBtn" aria-label="Start" title="Start">
+    <svg class="eye" viewBox="0 0 64 40"><g class="eye-parts"><path class="lid" d="M2,20 Q32,-4 62,20 Q32,44 2,20 Z"/><circle class="pupil" cx="32" cy="20" r="7"/></g></svg>
   </button>
   <div id="taskWindows"></div>
   <div id="clock">--:--</div>
@@ -1242,5 +1481,73 @@ tick();
 setInterval(tick, 1000*15);
 </script>
 
+
+<script>
+/* window shine behaves like a fixed light in the room. the highlight sits at a
+   fixed spot on screen, so it slides across a window's glass as you drag the
+   window, and fades as the window moves away from the light. the mouse
+   position is not used. */
+(function(){
+  const LIGHT = { x:.30, y:.16 };   // fixed light, as a fraction of the viewport
+  let dragging = false, raf = 0;
+
+  function apply(el){
+    const vw = innerWidth, vh = innerHeight;
+    const lx = LIGHT.x * vw, ly = LIGHT.y * vh;
+    const r = el.getBoundingClientRect();
+    const sx = Math.max(-40, Math.min(140, (lx - r.left) / Math.max(r.width, 1) * 100));
+    const sy = Math.max(-30, Math.min(60, (ly - r.top) / Math.max(r.height, 1) * 100));
+    const d = Math.hypot(r.left + r.width / 2 - lx, r.top + r.height / 2 - ly);
+    const sigma = Math.max(300, vw * 0.45);
+    const si = Math.exp(-(d * d) / (2 * sigma * sigma));
+    el.style.setProperty('--sx', sx.toFixed(1));
+    el.style.setProperty('--sy', sy.toFixed(1));
+    el.style.setProperty('--si', si.toFixed(3));
+  }
+  function updateAll(){ document.querySelectorAll('.win.open').forEach(apply); }
+  function loop(){ updateAll(); raf = dragging ? requestAnimationFrame(loop) : 0; }
+  function startDrag(){ dragging = true; if(!raf) raf = requestAnimationFrame(loop); }
+  function stopDrag(){ dragging = false; updateAll(); }
+
+  window.addEventListener('pointerdown', startDrag, {passive:true});
+  window.addEventListener('pointerup', stopDrag, {passive:true});
+  window.addEventListener('pointercancel', stopDrag, {passive:true});
+  window.addEventListener('resize', updateAll);
+  const mo = new MutationObserver(()=> requestAnimationFrame(updateAll));
+  document.querySelectorAll('.win').forEach(w=> mo.observe(w, {attributes:true, attributeFilter:['class']}));
+  updateAll();
+})();
+</script>
+
+<script>
+/* start button eye: random blinks (sometimes a double blink) and the odd glance */
+(function(){
+  const eye = document.querySelector('#startBtn .eye');
+  if(!eye || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function blink(){
+    eye.classList.remove('blink');
+    void eye.getBoundingClientRect();
+    eye.classList.add('blink');
+    setTimeout(()=> eye.classList.remove('blink'), 260);
+  }
+  function glance(){
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    eye.style.setProperty('--gx', (dir * 8) + 'px');
+    setTimeout(()=> eye.style.setProperty('--gx', '0px'), 700 + Math.random() * 600);
+  }
+  function next(){
+    setTimeout(()=>{
+      if(Math.random() < 0.3){
+        glance();
+      } else {
+        blink();
+        if(Math.random() < 0.25) setTimeout(blink, 340);
+      }
+      next();
+    }, 1800 + Math.random() * 4200);
+  }
+  next();
+})();
+</script>
 </body>
 </html>
