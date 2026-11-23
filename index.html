@@ -640,6 +640,14 @@ body.tnt-shaking #desktop{ animation:tntShake .55s ease; }
 .win.glass .frow.ficon:active{ transform:none; background:rgba(255,255,255,.22); }
 @media (prefers-reduced-motion:reduce){ .win.glass .frow.ficon, .win.glass .frow.ficon .fi{ transition:none; } }
 
+
+/* taskbar chips show the window's logo instead of its name */
+.task-chip.has-logo{ padding:3px 7px; display:flex; align-items:center; justify-content:center; }
+.task-chip .chip-logo{ width:24px; height:24px; display:block; object-fit:contain; image-rendering:auto; pointer-events:none; }
+.task-chip.has-logo:not(.active) .chip-logo{ opacity:.7; }
+.task-chip.has-logo:hover .chip-logo, .task-chip.has-logo.active .chip-logo{ opacity:1; }
+@media (max-width:640px){ .task-chip.has-logo{ padding:3px 6px; } }
+
 /* ============ MUSIC FOLDER ============ */
 .icon .glyph img.music-ico{ width:52px; height:52px; image-rendering:auto; object-fit:contain; }
 #win-music .audio-now{ font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:2px 0 8px; min-height:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -1233,7 +1241,20 @@ function openWindow(id){
   if(!wasOpen){
     const chip = document.createElement('div');
     chip.className = 'task-chip active';
-    chip.textContent = (id === 'work') ? 'pictures' : id;
+    const nameOf = (id === 'work') ? 'pictures' : id;
+    chip.title = nameOf;
+    chip.setAttribute('aria-label', nameOf);
+    const srcIcon = document.querySelector('.icon[data-win="' + id + '"] .glyph > *')
+                 || document.querySelector('.frow.ficon[data-win="' + id + '"] svg');
+    if(srcIcon){
+      const logo = srcIcon.cloneNode(true);
+      logo.removeAttribute('class');
+      logo.classList.add('chip-logo');
+      chip.appendChild(logo);
+      chip.classList.add('has-logo');
+    } else {
+      chip.textContent = nameOf;
+    }
     chip.dataset.chip = id;
     chip.addEventListener('click', ()=>{
       if(win.classList.contains('open') && Number(win.style.zIndex) === z){
@@ -1588,8 +1609,8 @@ setInterval(tick, 1000*15);
    Drop an mp3 into the music/ folder in the repo, then add a line below.
    file = path inside music/, title = what shows in the window.            */
 const MUSIC_TRACKS = [
-  { file: 'TOSHIBA (তোশিবা).wav', title: 'TOSHIBA (তোশিবা).wav' },
-  { file: 'PAthor.wav', title: 'PAthor.wav' },
+  { file: 'track1.mp3', title: 'track 1' },
+  { file: 'track2.mp3', title: 'track 2' },
 ];
 (function(){
   const list = document.getElementById('audioTracks');
